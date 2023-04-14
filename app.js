@@ -39,8 +39,8 @@ if (NODE_ENV === 'development') app.use(require('morgan')('dev'));
 app.use(helmet());
 
 // SET CORS
-app.use(cors()); // GET and POST
-app.options('*', cors()); // OPTIONS CHECK BEFORE PATCH, PUT AND DELETE
+app.use(cors({ origin: '*' })); // GET and POST
+app.options('*', cors({ origin: '*' })); // OPTIONS CHECK BEFORE PATCH, PUT AND DELETE
 /* SET ORIGIN CORS ONCE THE FRONT-END IS DONE
 app.use(
   cors({
