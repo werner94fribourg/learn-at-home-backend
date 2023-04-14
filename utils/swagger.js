@@ -3,6 +3,10 @@ const swaggerJsDoc = require('swagger-jsdoc');
 const { API_ROUTE } = require('./globals');
 const { version } = JSON.parse(fs.readFileSync(`${__dirname}/../package.json`));
 
+const {
+  env: { API_URL },
+} = process;
+
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -13,7 +17,7 @@ const options = {
     },
     servers: [
       {
-        url: `http://127.0.0.1:3000${API_ROUTE}`,
+        url: `${API_URL}${API_ROUTE}`,
       },
     ],
     tags: [
