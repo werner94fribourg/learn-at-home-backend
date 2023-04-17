@@ -93,7 +93,9 @@ exports.createSendToken = (user, statusCode, req, res, message = '') => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 60 * 600 * 1000
     ),
     httpOnly: true,
-    secure: req.secure || req.header('x-forwared-proto') === 'https',
+    sameSite: 'none',
+    secure: req.secure || req.header('x-forwarded-proto') === 'https',
+    domain: req.get('origin'),
   };
   const resObject = {
     status: 'success',
