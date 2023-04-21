@@ -37,6 +37,7 @@ if (NODE_ENV === 'development') app.use(require('morgan')('dev'));
 
 // SET SECURE SCRIPT POLICIES
 app.use(helmet());
+app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
 // SET CORS
 app.use(cors({ credentials: true, origin: 'http://localhost:3000' })); // GET and POST
