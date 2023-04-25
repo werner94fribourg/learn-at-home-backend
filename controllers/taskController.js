@@ -124,7 +124,10 @@ exports.getValidatedStudentTasks = catchAsync(async (req, res, next) => {
     user: { id: teacher },
   } = req;
 
-  const tasks = await Task.find({ validator: teacher });
+  const tasks = await Task.find({ validator: teacher }).populate({
+    path: 'performer',
+    select: 'username',
+  });
 
   res.status(200).json({ status: 'success', data: { tasks } });
 });
@@ -140,6 +143,9 @@ exports.getDoneStudentTasks = catchAsync(async (req, res, next) => {
     done: true,
     validated: false,
     performer: { $in: supervisedIds },
+  }).populate({
+    path: 'performer',
+    select: 'username',
   });
 
   res.status(200).json({ status: 'success', data: { tasks } });
@@ -156,6 +162,9 @@ exports.getTodoStudentTasks = catchAsync(async (req, res, next) => {
     done: false,
     validated: false,
     performer: { $in: supervisedIds },
+  }).populate({
+    path: 'performer',
+    select: 'username',
   });
 
   res.status(200).json({ status: 'success', data: { tasks } });
