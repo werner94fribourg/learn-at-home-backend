@@ -61,7 +61,9 @@ exports.LAST_AGGR_OBJ = [
         receiver: { $first: '$receiver.username' },
       },
       sender: { $first: '$sender._id' },
+      senderPhoto: { $first: { $first: '$sender.photo' } },
       receiver: { $first: '$receiver._id' },
+      receiverPhoto: { $first: { $first: '$receiver.photo' } },
       sent: {
         $max: '$sent',
       },

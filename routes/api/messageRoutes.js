@@ -350,9 +350,15 @@ router
  *                           sender:
  *                             type: string
  *                             example: 642199e8fcc9f9121f994dfr
+ *                           senderPhoto:
+ *                             type: string
+ *                             example: default.png
  *                           receiver:
  *                             type: string
- *                             example: 642199c4fcc9f9121f994dfb
+ *                             example: 642199e8fcc9f9121f994dfr
+ *                           receiverPhoto:
+ *                             type: string
+ *                             example: default.png
  *                           sent:
  *                             type: string
  *                             description: The creation date of the message
