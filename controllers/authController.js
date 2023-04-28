@@ -7,6 +7,9 @@ const Email = require('../utils/classes/Email');
 const { API_ROUTE, TIMEOUTS, PASSWORD_VALIDATOR } = require('../utils/globals');
 const { catchAsync, createSendToken } = require('../utils/utils');
 const Message = require('../models/messageModel');
+const Event = require('../models/eventModel');
+const Task = require('../models/taskModel');
+const TeachingDemand = require('../models/teachingDemandModel');
 
 exports.signup = catchAsync(async (req, res, next) => {
   const {
@@ -50,11 +53,85 @@ exports.signup = catchAsync(async (req, res, next) => {
     await new Email(newUser, url).sendWelcome();
 
     const confirmTimeout = setTimeout(async () => {
-      console.log(
-        `Delete user ${newUser._id.valueOf()} : Confirmation time expired.`
+      const id = newUser._id.valueOf();
+      console.log(`Delete user ${id} : Confirmation time expired.`);
+      await Message.deleteMany({ $or: [{ sender: id }, { receiver: id }] });
+      await Event.deleteMany({ organizer: id });
+
+      const participatingEvents = await Event.find({
+        $or: [{ guests: id }, { attendees: id }],
+      });
+
+      await Promise.all(
+        participatingEvents.map(
+          event =>
+            async function () {
+              const { _id: eventId, attendees, guests } = event;
+              const newAttendees = attendees.reduce((acc, attendee) => {
+                if (attendee.valueOf() !== id) acc.push(attendee.valueOf());
+                return acc;
+              }, []);
+              const newGuests = guests.reduce((acc, guest) => {
+                if (guest.valueOf() !== id) acc.push(guest.valueOf());
+                return acc;
+              }, []);
+
+              await Event.findByIdAndUpdate(eventId, {
+                attendees: newAttendees,
+                guests: newGuests,
+              });
+            }
+        )
       );
-      await User.findByIdAndDelete(newUser._id.valueOf());
-      TIMEOUTS[newUser._id.valueOf()] = undefined;
+
+      await Task.deleteMany({ performer: id });
+
+      const validatedTasks = await Task.find({ validator: id });
+
+      await Promise.all(
+        validatedTasks.map(
+          task =>
+            async function () {
+              task.validator = undefined;
+              await task.save();
+            }
+        )
+      );
+
+      await TeachingDemand.deleteMany({
+        $or: [{ sender: id }, { receiver: id }],
+      });
+
+      const supervisedStudents = await User.find({ supervisor: id });
+
+      await Promise.all(
+        supervisedStudents.map(
+          student =>
+            async function () {
+              student.supervisor = undefined;
+              await student.save();
+            }
+        )
+      );
+
+      const contacts = await User.find({ contacts: id });
+
+      await Promise.all(
+        contacts.map(
+          contact =>
+            async function () {
+              contact.contacts = contact.contacts.reduce((acc, contact) => {
+                if (contact.valueOf() !== id) acc.push(contact.valueOf());
+                return acc;
+              }, []);
+
+              await contact.save();
+            }
+        )
+      );
+
+      await User.findByIdAndDelete(id);
+      TIMEOUTS[id] = undefined;
       await new Email(newUser, '').sendConfirmationDelete();
     }, 10 * 24 * 60 * 60 * 1000);
 

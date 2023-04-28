@@ -15,7 +15,7 @@ const DB_CONNECTION = CONNECTION_STRING.replace('<USERNAME>', USERNAME)
   .replace('<HOST>', HOST)
   .replace('<DATABASE>', DATABASE);
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 mongoose.connect(DB_CONNECTION, {}).then(() => {
   console.log('DB connection successful.');
