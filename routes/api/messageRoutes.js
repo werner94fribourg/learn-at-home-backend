@@ -103,7 +103,62 @@ router.use(protect, restrictTo('student', 'teacher'));
  *                     messages:
  *                       type: array
  *                       items:
- *                         $ref: '#/components/schemas/Message'
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             description: The id of the message
+ *                             example: 642ac5749a75c968494496a9
+ *                           content:
+ *                             type: string
+ *                             description: The content of the message
+ *                             example: Hi Cedric
+ *                           sent:
+ *                             type: string
+ *                             description: The creation date of the message
+ *                             example: 2023-04-03T12:24:20.358Z
+ *                           sender:
+ *                             type: object
+ *                             description: The sender of the message
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                                 description: The id of the sender
+ *                                 example: 642199e8fcc9f9121f994dfr
+ *                               username:
+ *                                 type: string
+ *                                 description: The username of the sender
+ *                                 example: werner94
+ *                               photo:
+ *                                 type: string
+ *                                 description: The profile picture of the sender
+ *                                 example: default.jpg
+ *                           receiver:
+ *                             type: object
+ *                             description: The receiver of the message
+ *                             properties:
+ *                               _id:
+ *                                 type: string
+ *                                 description: The id of the receiver
+ *                                 example: 642199c4fcc9f9121f994dfb
+ *                               username:
+ *                                 type: string
+ *                                 description: The username of the receiver
+ *                                 example: werner94
+ *                               photo:
+ *                                 type: string
+ *                                 description: The profile picture of the receiver
+ *                                 example: default.jpg
+ *                           files:
+ *                             type: array
+ *                             items:
+ *                              type: string
+ *                              description: An attached file of a message
+ *                              example: text.pdf
+ *                           read:
+ *                             type: boolean
+ *                             description: The read status of the message
+ *                             example: true
  *       400:
  *         description: Invalid parameters
  *         content:

@@ -45,6 +45,14 @@ exports.getConversation = catchAsync(async (req, res, next) => {
     ],
   })
     .sort({ sent: 'desc' })
+    .populate({
+      path: 'sender',
+      select: '_id username photo',
+    })
+    .populate({
+      path: 'receiver',
+      select: '_id username photo',
+    })
     .skip(+skip)
     .limit(+limit);
 
