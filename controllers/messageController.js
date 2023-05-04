@@ -40,8 +40,8 @@ exports.getConversation = catchAsync(async (req, res, next) => {
 
   const conversation = await Message.find({
     $or: [
-      { sender: { $in: [sender, receiver] } },
-      { receiver: { $in: [sender, receiver] } },
+      { $and: [{ sender }, { receiver }] },
+      { $and: [{ sender: receiver }, { receiver: sender }] },
     ],
   })
     .sort({ sent: 'desc' })
