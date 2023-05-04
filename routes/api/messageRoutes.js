@@ -772,7 +772,7 @@ router.route('/unread/:userId').get(checkOtherUser, getUnreadFromUser);
 /**
  * @swagger
  * /messages/{messageId}/read:
- *   get:
+ *   patch:
  *     tags:
  *       - Message
  *     summary: Route used to change the read status of a message (accessible to teachers and students only)
