@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const moment = require('moment-timezone');
 const AppError = require('./classes/AppError');
-const { TIMEZONE, MONTHS } = require('./globals');
+const { TIMEZONE, MONTHS, SOCKET_CONNECTIONS } = require('./globals');
 const Event = require('../models/eventModel');
 
 const signToken = id =>
@@ -23,6 +23,9 @@ exports.shutDownAll = async (server, dbConnection, message, error) => {
       console.log('Close DB connection.');
       await dbConnection.close();
     }
+    SOCKET_CONNECTIONS.forEach(item => {
+      if (item) item.socket.disconnect();
+    });
     if (server)
       server.close(() => {
         console.log('Close server.');

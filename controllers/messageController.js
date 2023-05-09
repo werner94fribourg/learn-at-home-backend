@@ -89,26 +89,29 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     .sort({ sent: -1 })
     .limit(1);
 
-  const storageFiles = (
-    await Promise.all(
-      files.map(async file => {
-        const { success, data } = await upload({
-          containerName: 'public',
-          fileName: file.split('/')[1],
-          filePath: `./${CONVERSATIONS_FOLDER}/${file}`,
-          useConnectionString: true,
-          connectionString: process.env.AZURE_CONNECTION_STRING,
-          accountName: process.env.AZURE_ACCOUNT_NAME,
-        });
+  const storageFiles =
+    files?.length && files.length > 0
+      ? (
+          await Promise.all(
+            files.map(async file => {
+              const { success, data } = await upload({
+                containerName: 'public',
+                fileName: file.split('/')[1],
+                filePath: `./${CONVERSATIONS_FOLDER}/${file}`,
+                useConnectionString: true,
+                connectionString: process.env.AZURE_CONNECTION_STRING,
+                accountName: process.env.AZURE_ACCOUNT_NAME,
+              });
 
-        if (!success) return undefined;
+              if (!success) return undefined;
 
-        return data.url;
-      })
-    )
-  ).filter(file => file !== undefined);
+              return data.url;
+            })
+          )
+        ).filter(file => file !== undefined)
+      : [];
 
-  const newMessage = await Message.create({
+  let newMessage = await Message.create({
     content,
     sender,
     receiver,
@@ -116,6 +119,16 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     indexMessage: lastMessage ? ++lastMessage.indexMessage : 1,
     files: storageFiles,
   });
+
+  newMessage = await Message.findById(newMessage._id)
+    .populate({
+      path: 'sender',
+      select: '_id username photo',
+    })
+    .populate({
+      path: 'receiver',
+      select: '_id username photo',
+    });
 
   res.status(201).json({
     status: 'success',

@@ -128,3 +128,7 @@ exports.MONTHS = [
 ];
 
 exports.TIMEOUTS = {};
+
+exports.SOCKET_CONNECTIONS = [];
+
+exports.ROOMS = [];
