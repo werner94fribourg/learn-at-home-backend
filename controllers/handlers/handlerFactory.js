@@ -5,6 +5,7 @@ const APIFeatures = require('../../utils/classes/APIFeatures');
 const AppError = require('../../utils/classes/AppError');
 const { USERS_FOLDER } = require('../../utils/globals');
 const { catchAsync } = require('../../utils/utils');
+const { upload } = require('azure-blobv2');
 
 exports.getAll = (Model, filterOptions) =>
   catchAsync(async (req, res, next) => {
@@ -87,7 +88,17 @@ exports.updateOne = Model =>
   catchAsync(async (req, res) => {
     const { document, collectionName, body, file } = req;
 
-    if (file && collectionName === 'user') body.photo = file.filename;
+    if (file && collectionName === 'user') {
+      const { success, data } = await upload({
+        containerName: 'public',
+        fileName: file.filename,
+        filePath: `./${USERS_FOLDER}/${file.filename}`,
+        useConnectionString: true,
+        connectionString: process.env.AZURE_CONNECTION_STRING,
+        accountName: process.env.AZURE_ACCOUNT_NAME,
+      });
+      if (success) body.photo = data.url;
+    }
 
     const updatedDocument = await Model.findByIdAndUpdate(document._id, body, {
       new: true,

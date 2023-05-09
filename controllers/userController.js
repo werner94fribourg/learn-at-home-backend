@@ -11,6 +11,7 @@ const {
   updateOne,
   deleteOne,
 } = require('./handlers/handlerFactory');
+const { upload } = require('azure-blobv2');
 
 exports.getAllUsers = getAll(User, { role: { $ne: 'admin' } });
 

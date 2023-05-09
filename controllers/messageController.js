@@ -16,6 +16,7 @@ const {
   uploadMessageFiles,
   getLastMessagesBetweenTwoUsers,
 } = require('../utils/utils');
+const { upload } = require('azure-blobv2');
 
 exports.getConversation = catchAsync(async (req, res, next) => {
   const {
@@ -88,13 +89,32 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     .sort({ sent: -1 })
     .limit(1);
 
+  const storageFiles = (
+    await Promise.all(
+      files.map(async file => {
+        const { success, data } = await upload({
+          containerName: 'public',
+          fileName: file.split('/')[1],
+          filePath: `./${CONVERSATIONS_FOLDER}/${file}`,
+          useConnectionString: true,
+          connectionString: process.env.AZURE_CONNECTION_STRING,
+          accountName: process.env.AZURE_ACCOUNT_NAME,
+        });
+
+        if (!success) return undefined;
+
+        return data.url;
+      })
+    )
+  ).filter(file => file !== undefined);
+
   const newMessage = await Message.create({
     content,
     sender,
     receiver,
     sent: Date.now(),
     indexMessage: lastMessage ? ++lastMessage.indexMessage : 1,
-    files,
+    files: storageFiles,
   });
 
   res.status(201).json({

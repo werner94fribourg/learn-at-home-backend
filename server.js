@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const app = require('./app');
 const { shutDownAll: shutDownWithoutBind } = require('./utils/utils');
+const { upload } = require('azure-blobv2');
 
 dotenv.config({ path: './config.env' });
 
