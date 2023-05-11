@@ -131,4 +131,4 @@ exports.TIMEOUTS = {};
 
 exports.SOCKET_CONNECTIONS = [];
 
-exports.ROOMS = [];
+exports.CHAT_ROOM = 'chatroom';

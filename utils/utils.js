@@ -23,9 +23,7 @@ exports.shutDownAll = async (server, dbConnection, message, error) => {
       console.log('Close DB connection.');
       await dbConnection.close();
     }
-    SOCKET_CONNECTIONS.forEach(item => {
-      if (item) item.socket.disconnect();
-    });
+    
     if (server)
       server.close(() => {
         console.log('Close server.');

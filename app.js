@@ -52,7 +52,7 @@ app.use(
 
 // LIMIT NB REQUESTS TO API
 const limiter = rateLimit({
-  max: 500,
+  max: 10000,
   windowMs: 60 * 60 * 1000,
   message: (_, res) =>
     res.json({

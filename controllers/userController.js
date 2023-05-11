@@ -250,9 +250,7 @@ exports.getSupervisedStudents = catchAsync(async (req, res, next) => {
 exports.getConnectionStatus = catchAsync(async (req, res) => {
   const { document: user } = req;
 
-  const socketUser = SOCKET_CONNECTIONS.find(
-    conn => conn.userId === user._id.valueOf()
-  );
+  const socketUser = SOCKET_CONNECTIONS.find(id => id === user._id.valueOf());
 
   res.status(200).json({
     status: 'success',

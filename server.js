@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 const app = require('./app');
 const { shutDownAll: shutDownWithoutBind } = require('./utils/utils');
 const { Server } = require('socket.io');
-const { SOCKET_CONNECTIONS, ROOMS } = require('./utils/globals');
+const { SOCKET_CONNECTIONS, CHAT_ROOM } = require('./utils/globals');
 
 dotenv.config({ path: './config.env' });
 
@@ -39,56 +39,29 @@ const io = new Server(server, {
 io.on('connection', socket => {
   const userId = socket?.handshake?.query?.userId;
 
-  const index = SOCKET_CONNECTIONS.indexOf(id => id === userId);
-  SOCKET_CONNECTIONS.push({ userId, socket });
   console.log(`User Connected: ${userId}`);
+  socket.join(CHAT_ROOM);
 
-  socket.on('conversation', ({ connectedId, activeUserId }) => {
-    if (!connectedId || !activeUserId) return;
-
-    const connectedUser = SOCKET_CONNECTIONS.find(
-      conn => conn.userId === activeUserId
-    );
-    if (!connectedUser) return;
-
-    const room = ROOMS.find(
-      room =>
-        room.participants.includes(connectedId) &&
-        room.participants.includes(connectedUser.userId)
-    );
-    if (!room) {
-      const name = `${connectedId}_${connectedUser.userId}`;
-      ROOMS.push({ participants: [connectedId, connectedUser.userId], name });
-      socket.join(name);
-    } else socket.join(room.name);
-    console.log(
-      `Room opened between users ${connectedId} and ${connectedUser.userId}`
-    );
-  });
-
+  if (!SOCKET_CONNECTIONS.find(id => id === userId)) {
+    SOCKET_CONNECTIONS.push(userId);
+  }
   socket.on('send_message', message => {
-    const {
-      sender: { _id: connectedId },
-      receiver: { _id: activeUserId },
-    } = message;
-
-    const room = ROOMS.find(
-      room =>
-        room.participants.includes(connectedId) &&
-        room.participants.includes(activeUserId)
-    );
-
-    if (!room) return;
-    const { name } = room;
-
-    socket.to(name).emit('receive_message', message);
+    socket.to(CHAT_ROOM).emit('receive_message', message);
   });
 
+  socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
   socket.on('disconnect', () => {
-    for (let i = index; i < SOCKET_CONNECTIONS.length - 1; i++) {
-      SOCKET_CONNECTIONS[i] = SOCKET_CONNECTIONS[i + 1];
+    socket
+      .to(CHAT_ROOM)
+      .emit('notify_connection', { userId, connected: false });
+
+    const index = SOCKET_CONNECTIONS.indexOf(id => id === userId);
+    if (index !== -1) {
+      for (let i = index; i < SOCKET_CONNECTIONS.length - 1; i++) {
+        SOCKET_CONNECTIONS[i] = SOCKET_CONNECTIONS[i + 1];
+      }
+      SOCKET_CONNECTIONS.pop();
     }
-    SOCKET_CONNECTIONS.pop();
     console.log('Socket Disconnected:', socket.id);
   });
 });

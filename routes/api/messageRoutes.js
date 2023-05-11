@@ -65,7 +65,7 @@ const router = express.Router();
  *             username:
  *               type: string
  *               description: The username of the receiver
- *               example: werner94
+ *               example: werner95
  *             photo:
  *               type: string
  *               description: The profile picture of the receiver
@@ -376,13 +376,13 @@ router
  *                             example: 642199e8fcc9f9121f994dfr
  *                           senderPhoto:
  *                             type: string
- *                             example: default.png
+ *                             example: https://learnathome.blob.core.windows.net/public/default.jpg
  *                           receiver:
  *                             type: string
  *                             example: 642199e8fcc9f9121f994dfr
  *                           receiverPhoto:
  *                             type: string
- *                             example: default.png
+ *                             example: https://learnathome.blob.core.windows.net/public/default.jpg
  *                           sent:
  *                             type: string
  *                             description: The creation date of the message
