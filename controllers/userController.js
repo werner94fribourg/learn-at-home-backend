@@ -2,7 +2,7 @@ const sharp = require('sharp');
 const User = require('../models/userModel');
 const AppError = require('../utils/classes/AppError');
 const Email = require('../utils/classes/Email');
-const { TIMEOUTS } = require('../utils/globals');
+const { TIMEOUTS, SOCKET_CONNECTIONS } = require('../utils/globals');
 const { catchAsync, uploadImage } = require('../utils/utils');
 const {
   getAll,
@@ -11,7 +11,6 @@ const {
   updateOne,
   deleteOne,
 } = require('./handlers/handlerFactory');
-const { upload } = require('azure-blobv2');
 
 exports.getAllUsers = getAll(User, { role: { $ne: 'admin' } });
 
@@ -244,6 +243,21 @@ exports.getSupervisedStudents = catchAsync(async (req, res, next) => {
     status: 'success',
     data: {
       users,
+    },
+  });
+});
+
+exports.getConnectionStatus = catchAsync(async (req, res) => {
+  const { document: user } = req;
+
+  const socketUser = SOCKET_CONNECTIONS.find(
+    conn => conn.userId === user._id.valueOf()
+  );
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      connected: !socketUser ? false : true,
     },
   });
 });

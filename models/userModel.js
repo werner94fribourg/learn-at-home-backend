@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema({
   photo: {
     type: String,
     trim: true,
-    default: 'default.jpg',
+    default: 'https://learnathome.blob.core.windows.net/public/default.jpg',
   },
   password: {
     type: String,

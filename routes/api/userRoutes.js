@@ -28,6 +28,7 @@ const {
   deleteContact,
   getAllContacts,
   getSupervisedStudents,
+  getConnectionStatus,
 } = require('../../controllers/userController');
 
 const router = express.Router();
@@ -96,7 +97,7 @@ const router = express.Router();
  *         photo:
  *           type: string
  *           description: The profile picture of the user
- *           example: default.jpg
+ *           example: https://learnathome.blob.core.windows.net/public/default.jpg
  *         role:
  *           type: string
  *           description: The role of the user
@@ -829,6 +830,120 @@ router.get(
  */
 router.route('/:id').get(queryUser, getUser);
 
+/**
+ * @swagger
+ * /users/{userId}/connection-status:
+ *   get:
+ *     tags:
+ *       - User
+ *     summary: Route used to get a specific user's connection status
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         description: 'The id of the user we want to get the connection status'
+ *         schema:
+ *           type: string
+ *           example: 641c7de953f7dcad45936b4e
+ *     responses:
+ *       200:
+ *         description: The connection status of the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     connected:
+ *                       type: boolean
+ *                       example: false
+ *       400:
+ *         description: Invalid id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: "Invalid _id: 642199c4fcc9f9"
+ *       401:
+ *         description: User login problems
+ *         content:
+ *           application/json:
+ *             examples:
+ *               notLoggedInExample:
+ *                 summary: User Not logged in
+ *                 value:
+ *                   status: fail
+ *                   message: You are not logged in! Please log in to get access.
+ *               accountNotFoundExample:
+ *                 summary: Account not found or deleted
+ *                 value:
+ *                   status: fail
+ *                   message: The requested account doesn't exist or was deleted.
+ *               passwordChangedExample:
+ *                 summary: Password changed after the token was issued
+ *                 value:
+ *                   status: fail
+ *                   message: User recently changed password ! Please log in again.
+ *       403:
+ *         description: Forbidden access due to role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: You don't have permission to perform this action.
+ *       404:
+ *         description: Non existing user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: No user found with that ID.
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             examples:
+ *               emailSendingExample:
+ *                 summary: E-mail sending error
+ *                 value:
+ *                   status: error
+ *                   message: There was an error sending the confirmation email. Please contact us at admin-learn@home.com!
+ *               internalServerErrorExample:
+ *                 summary: Generic internal server error
+ *                 value:
+ *                   status: error
+ *                   message: Something went wrong. Try Again !
+ */
+router
+  .route('/:id/status')
+  .get(
+    protect,
+    restrictTo('student', 'teacher'),
+    queryUser,
+    getConnectionStatus
+  );
 /**
  * @swagger
  * /users/signup:

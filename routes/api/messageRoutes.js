@@ -53,7 +53,7 @@ const router = express.Router();
  *             photo:
  *               type: string
  *               description: The profile picture of the sender
- *               example: default.jpg
+ *               example: https://learnathome.blob.core.windows.net/public/default.jpg
  *         receiver:
  *           type: object
  *           description: The receiver of the message
@@ -69,7 +69,7 @@ const router = express.Router();
  *             photo:
  *               type: string
  *               description: The profile picture of the receiver
- *               example: default.jpg
+ *               example: https://learnathome.blob.core.windows.net/public/default.jpg
  *         files:
  *           type: array
  *           items:
