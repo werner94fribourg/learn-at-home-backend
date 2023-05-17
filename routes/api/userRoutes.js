@@ -29,6 +29,7 @@ const {
   getAllContacts,
   getSupervisedStudents,
   getConnectionStatus,
+  sendInvitation,
 } = require('../../controllers/userController');
 
 const router = express.Router();
@@ -619,18 +620,20 @@ router
  *                       items:
  *                         $ref: '#/components/schemas/User'
  *       400:
- *         description: Invalid id
+ *         description: Invalid updates
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: fail
- *                 message:
- *                   type: string
- *                   example: "Invalid _id: 642199c4fcc9f9"
+ *             examples:
+ *               invalidIdExample:
+ *                 summary: Invalid id
+ *                 value:
+ *                   status: fail
+ *                   message: "Invalid _id: 642199c4fcc9f9"
+ *               noSentInvitationExample:
+ *                 summary: No invitation sent to the logged user
+ *                 value:
+ *                   status: fail
+ *                   message: The user you want to add hasn't send you a contact request.
  *       401:
  *         description: User login problems
  *         content:
@@ -690,6 +693,112 @@ router
   .route('/contacts/:contactId')
   .patch(protect, restrictTo('student', 'teacher'), addContact)
   .delete(protect, restrictTo('student', 'teacher'), deleteContact);
+
+/**
+ * @swagger
+ * /users/contacts/{userId}/invite:
+ *   patch:
+ *     tags:
+ *       - User
+ *     summary: Route used to send a contact's invitation to an user (accessible to teachers and students only)
+ *     parameters:
+ *       - name: contactId
+ *         in: path
+ *         description: 'The id of the user we want to send a contact invitation '
+ *         schema:
+ *           type: string
+ *           example: 641c7de953f7dcad45936b4e
+ *     responses:
+ *       200:
+ *         description: Successfull invitation sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Contact invitation successfully sent.
+ *                 data:
+ *                   type: string
+ *                   nullable: true
+ *                   example: null
+ *       400:
+ *         description: Invalid updates
+ *         content:
+ *           application/json:
+ *             examples:
+ *               invalidIdExample:
+ *                 summary: Invalid id
+ *                 value:
+ *                   status: fail
+ *                   message: "Invalid _id: 642199c4fcc9f9"
+ *               invalidSelfInvitationExample:
+ *                 summary: Self invitation attempt
+ *                 value:
+ *                   status: fail
+ *                   message: You can't send a contact invitation to yourself.
+ *       401:
+ *         description: User login problems
+ *         content:
+ *           application/json:
+ *             examples:
+ *               notLoggedInExample:
+ *                 summary: User Not logged in
+ *                 value:
+ *                   status: fail
+ *                   message: You are not logged in! Please log in to get access.
+ *               accountNotFoundExample:
+ *                 summary: Account not found or deleted
+ *                 value:
+ *                   status: fail
+ *                   message: The requested account doesn't exist or was deleted.
+ *               passwordChangedExample:
+ *                 summary: Password changed after the token was issued
+ *                 value:
+ *                   status: fail
+ *                   message: User recently changed password ! Please log in again.
+ *       403:
+ *         description: Forbidden access due to role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: You don't have permission to perform this action.
+ *       404:
+ *         description: Non existing user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: No user found with that ID.
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ *     security:
+ *       - bearerAuth: []
+ */
+router
+  .route('/contacts/:userId/invite')
+  .patch(protect, restrictTo('student', 'teacher'), sendInvitation);
 
 /**
  * @swagger

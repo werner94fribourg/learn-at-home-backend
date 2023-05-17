@@ -22,6 +22,8 @@ exports.PASSWORD_VALIDATOR = PASSWORD_VALIDATOR;
 
 exports.PARAMETER_WHITELIST = ['sent', 'beginning', 'end'];
 
+exports.FRONT_END_URL = 'http://localhost:3000';
+
 exports.API_ROUTE = '/api/v1';
 
 exports.PUBLIC_FOLDER = 'public';

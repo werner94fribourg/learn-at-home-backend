@@ -3,7 +3,12 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const moment = require('moment-timezone');
 const AppError = require('./classes/AppError');
-const { TIMEZONE, MONTHS, SOCKET_CONNECTIONS } = require('./globals');
+const {
+  TIMEZONE,
+  MONTHS,
+  SOCKET_CONNECTIONS,
+  FRONT_END_URL,
+} = require('./globals');
 const Event = require('../models/eventModel');
 
 const signToken = id =>
@@ -23,7 +28,7 @@ exports.shutDownAll = async (server, dbConnection, message, error) => {
       console.log('Close DB connection.');
       await dbConnection.close();
     }
-    
+
     if (server)
       server.close(() => {
         console.log('Close server.');
@@ -106,6 +111,10 @@ exports.createSendToken = (user, statusCode, req, res, message = '') => {
   if (message) resObject.message = message;
   // send it as a cookie
   res.cookie('jwt', token, cookieOptions);
+
+  res.set('Access-Control-Allow-Credentials', true);
+  res.set('Access-Control-Allow-Origin', FRONT_END_URL);
+  res.set('Access-Control-Allow-Headers', 'x-jwt-token');
 
   res.status(statusCode).json(resObject);
 };

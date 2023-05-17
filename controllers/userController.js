@@ -124,13 +124,62 @@ exports.getAllContacts = catchAsync(async (req, res) => {
   });
 });
 
+exports.sendInvitation = catchAsync(async (req, res, next) => {
+  const {
+    params: { userId },
+    user: { id },
+  } = req;
+
+  if (userId === id) {
+    next(new AppError("You can't send a contact invitation to yourself.", 400));
+    return;
+  }
+
+  const otherUser = await User.findOne({
+    _id: userId,
+    role: { $ne: 'admin' },
+  }).select('invitations');
+
+  if (!otherUser) {
+    next(new AppError('No user found with that ID.', 404));
+    return;
+  }
+
+  const { invitations: invitationsVal } = otherUser;
+
+  let invitations = invitationsVal?.map(it => it.valueOf());
+
+  if (invitations?.findIndex(sender => sender === id) !== -1) {
+    res.status(200).json({
+      status: 'success',
+      message: 'Contact invitation successfully sent.',
+      data: null,
+    });
+    return;
+  }
+
+  if (invitations) invitations.push(id);
+  else invitations = [id];
+
+  await User.findByIdAndUpdate(userId, { invitations });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Contact invitation successfully sent.',
+    data: null,
+  });
+});
+
 exports.addContact = catchAsync(async (req, res, next) => {
   const {
     params: { contactId },
     user: { id },
   } = req;
 
-  const { contacts } = await User.findById(id).select('contacts');
+  const { contacts, invitations } = await User.findById(id)
+    .select('contacts')
+    .select('invitations');
+
   const otherUser = await User.findOne({
     _id: contactId,
     role: { $ne: 'admin' },
@@ -140,6 +189,7 @@ exports.addContact = catchAsync(async (req, res, next) => {
     next(new AppError('No user found with that Id.', 404));
     return;
   }
+
   const { contacts: otherContacts, id: otherId } = otherUser;
 
   if (otherId === id) {
@@ -147,16 +197,29 @@ exports.addContact = catchAsync(async (req, res, next) => {
     return;
   }
 
-  if (!contacts?.includes(otherId)) {
-    contacts?.push(otherId);
-    otherContacts?.push(id);
+  if (invitations?.findIndex(sender => sender.valueOf() === contactId) === -1) {
+    next(
+      new AppError(
+        "The user you want to add hasn't send you a contact request.",
+        400
+      )
+    );
+    return;
   }
+
+  if (!contacts?.includes(otherId)) contacts?.push(otherId);
+
+  if (!otherContacts?.includes(id)) otherContacts?.push(id);
+
+  const newInvitations = invitations?.filter(
+    sender => sender.valueOf() !== contactId
+  );
 
   await User.findByIdAndUpdate(otherId, { contacts: otherContacts || [id] });
 
   const updatedUser = await User.findByIdAndUpdate(
     id,
-    { contacts: contacts || [otherId] },
+    { contacts: contacts || [otherId], invitations: newInvitations },
     {
       new: true,
       runValidators: false,

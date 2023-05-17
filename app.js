@@ -14,6 +14,7 @@ const {
   PARAMETER_WHITELIST,
   API_ROUTE,
   PUBLIC_FOLDER,
+  FRONT_END_URL,
 } = require('./utils/globals');
 const AppError = require('./utils/classes/AppError');
 const errorHandler = require('./controllers/errorController');
@@ -40,8 +41,8 @@ app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
 // SET CORS
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' })); // GET and POST
-app.options('*', cors({ credentials: true, origin: 'http://localhost:3000' })); // OPTIONS CHECK BEFORE PATCH, PUT AND DELETE
+app.use(cors({ credentials: true, origin: FRONT_END_URL })); // GET and POST
+app.options('*', cors({ credentials: true, origin: FRONT_END_URL })); // OPTIONS CHECK BEFORE PATCH, PUT AND DELETE
 /* SET ORIGIN CORS ONCE THE FRONT-END IS DONE
 app.use(
   cors({

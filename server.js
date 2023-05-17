@@ -3,7 +3,11 @@ const dotenv = require('dotenv');
 const app = require('./app');
 const { shutDownAll: shutDownWithoutBind } = require('./utils/utils');
 const { Server } = require('socket.io');
-const { SOCKET_CONNECTIONS, CHAT_ROOM } = require('./utils/globals');
+const {
+  SOCKET_CONNECTIONS,
+  CHAT_ROOM,
+  FRONT_END_URL,
+} = require('./utils/globals');
 
 dotenv.config({ path: './config.env' });
 
@@ -29,7 +33,7 @@ const server = app.listen(port, () => {
 
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: FRONT_END_URL,
     methods: ['GET', 'POST'],
   },
   'close timeout': 0,

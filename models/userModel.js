@@ -108,6 +108,13 @@ const userSchema = new mongoose.Schema({
       select: false,
     },
   ],
+  invitations: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+      select: false,
+    },
+  ],
   supervisor: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',
