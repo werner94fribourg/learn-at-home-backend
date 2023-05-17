@@ -46,11 +46,19 @@ io.on('connection', socket => {
   console.log(`User Connected: ${userId}`);
   socket.join(CHAT_ROOM);
 
-  if (!SOCKET_CONNECTIONS.find(id => id === userId)) {
+  if (!SOCKET_CONNECTIONS.find(id => id === userId))
     SOCKET_CONNECTIONS.push(userId);
-  }
+
   socket.on('send_message', message => {
     socket.to(CHAT_ROOM).emit('receive_message', message);
+  });
+
+  socket.on('send_invitation', invitation => {
+    socket.to(CHAT_ROOM).emit('receive_invitation', invitation);
+  });
+
+  socket.on('accept_invitation', invitation => {
+    socket.to(CHAT_ROOM).emit('invitation_accepted', invitation);
   });
 
   socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
