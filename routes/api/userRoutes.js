@@ -30,6 +30,8 @@ const {
   getSupervisedStudents,
   getConnectionStatus,
   sendInvitation,
+  declineInvitation,
+  getAllInvitations,
 } = require('../../controllers/userController');
 
 const router = express.Router();
@@ -161,6 +163,26 @@ const router = express.Router();
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/User'
+ *       401:
+ *         description: User login problems
+ *         content:
+ *           application/json:
+ *             examples:
+ *               notLoggedInExample:
+ *                 summary: User Not logged in
+ *                 value:
+ *                   status: fail
+ *                   message: You are not logged in! Please log in to get access.
+ *               accountNotFoundExample:
+ *                 summary: Account not found or deleted
+ *                 value:
+ *                   status: fail
+ *                   message: The requested account doesn't exist or was deleted.
+ *               passwordChangedExample:
+ *                 summary: Password changed after the token was issued
+ *                 value:
+ *                   status: fail
+ *                   message: User recently changed password ! Please log in again.
  *       404:
  *         description: Non existing page
  *         content:
@@ -180,6 +202,8 @@ const router = express.Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ServerError'
+ *     security:
+ *       - bearerAuth: []
  *   post:
  *     tags:
  *       - User
@@ -199,7 +223,7 @@ const router = express.Router();
  *                   type: string
  *                   example: Please use /signup instead.
  */
-router.route('/').get(getAllUsers).post(createUser);
+router.route('/').get(protect, getAllUsers).post(createUser);
 
 /**
  * @swagger
@@ -482,6 +506,77 @@ router
 router
   .route('/contacts')
   .get(protect, restrictTo('student', 'teacher'), getAllContacts);
+
+/**
+ * @swagger
+ * /users/invitations:
+ *   get:
+ *     tags:
+ *       - User
+ *     summary: Route used to get all the contact's invitations of the logged user (accessible to teachers and students only)
+ *     responses:
+ *       200:
+ *         description: The array of contact's invitations of the logged user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/User'
+ *       401:
+ *         description: User login problems
+ *         content:
+ *           application/json:
+ *             examples:
+ *               notLoggedInExample:
+ *                 summary: User Not logged in
+ *                 value:
+ *                   status: fail
+ *                   message: You are not logged in! Please log in to get access.
+ *               accountNotFoundExample:
+ *                 summary: Account not found or deleted
+ *                 value:
+ *                   status: fail
+ *                   message: The requested account doesn't exist or was deleted.
+ *               passwordChangedExample:
+ *                 summary: Password changed after the token was issued
+ *                 value:
+ *                   status: fail
+ *                   message: User recently changed password ! Please log in again.
+ *       403:
+ *         description: Forbidden access due to role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: You don't have permission to perform this action.
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ *     security:
+ *       - bearerAuth: []
+ */
+router
+  .route('/invitations')
+  .get(protect, restrictTo('student', 'teacher'), getAllInvitations);
 
 /**
  * @swagger
@@ -799,6 +894,117 @@ router
 router
   .route('/contacts/:userId/invite')
   .patch(protect, restrictTo('student', 'teacher'), sendInvitation);
+
+/**
+ * @swagger
+ * /users/contacts/{userId}/decline:
+ *   patch:
+ *     tags:
+ *       - User
+ *     summary: Route used to decline a contact's invitation from an user (accessible to teachers and students only)
+ *     parameters:
+ *       - name: contactId
+ *         in: path
+ *         description: 'The id of the user we want to decline the contact invitation'
+ *         schema:
+ *           type: string
+ *           example: 641c7de953f7dcad45936b4e
+ *     responses:
+ *       200:
+ *         description: Invitation successfully declined
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Contact invitation successfully refused.
+ *                 data:
+ *                   type: string
+ *                   nullable: true
+ *                   example: null
+ *       400:
+ *         description: Invalid updates
+ *         content:
+ *           application/json:
+ *             examples:
+ *               invalidIdExample:
+ *                 summary: Invalid id
+ *                 value:
+ *                   status: fail
+ *                   message: "Invalid _id: 642199c4fcc9f9"
+ *               invalidSelfRefusalExample:
+ *                 summary: Self refusal attempt
+ *                 value:
+ *                   status: fail
+ *                   message: You can't decline a contact invitation to yourself.
+ *               noInvitationExample:
+ *                 summary: The user hasn't invite the connected one
+ *                 value:
+ *                   status: fail
+ *                   message: The user you want to add hasn't send you a contact request.
+ *       401:
+ *         description: User login problems
+ *         content:
+ *           application/json:
+ *             examples:
+ *               notLoggedInExample:
+ *                 summary: User Not logged in
+ *                 value:
+ *                   status: fail
+ *                   message: You are not logged in! Please log in to get access.
+ *               accountNotFoundExample:
+ *                 summary: Account not found or deleted
+ *                 value:
+ *                   status: fail
+ *                   message: The requested account doesn't exist or was deleted.
+ *               passwordChangedExample:
+ *                 summary: Password changed after the token was issued
+ *                 value:
+ *                   status: fail
+ *                   message: User recently changed password ! Please log in again.
+ *       403:
+ *         description: Forbidden access due to role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: You don't have permission to perform this action.
+ *       404:
+ *         description: Non existing user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: No user found with that ID.
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ *     security:
+ *       - bearerAuth: []
+ */
+router
+  .route('/contacts/:userId/decline')
+  .patch(protect, restrictTo('student', 'teacher'), declineInvitation);
 
 /**
  * @swagger

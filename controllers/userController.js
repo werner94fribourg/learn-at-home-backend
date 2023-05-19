@@ -12,7 +12,14 @@ const {
   deleteOne,
 } = require('./handlers/handlerFactory');
 
-exports.getAllUsers = getAll(User, { role: { $ne: 'admin' } });
+exports.getAllUsers = (req, res, next) => {
+  // User without filtering
+  getAll(User, { role: { $ne: 'admin' }, _id: { $ne: req.user.id } })(
+    req,
+    res,
+    next
+  );
+};
 
 exports.queryUser = queryOne(User, { role: { $ne: 'admin' } });
 
@@ -108,6 +115,23 @@ exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   next();
 });
 
+exports.getAllInvitations = catchAsync(async (req, res, next) => {
+  const {
+    user: { id },
+  } = req;
+
+  const { invitations } = await User.findById(id)
+    .select('invitations')
+    .populate({
+      path: 'invitations',
+      select: 'username firstname lastname photo',
+    });
+
+  res
+    .status(200)
+    .json({ status: 'success', data: { users: invitations || [] } });
+});
+
 exports.getAllContacts = catchAsync(async (req, res) => {
   const {
     user: { id },
@@ -120,7 +144,63 @@ exports.getAllContacts = catchAsync(async (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    data: { users: contacts },
+    data: { users: contacts || [] },
+  });
+});
+
+exports.declineInvitation = catchAsync(async (req, res, next) => {
+  const {
+    params: { userId },
+    user: { id },
+  } = req;
+
+  if (userId === id) {
+    next(
+      new AppError("You can't decline a contact invitation to yourself.", 400)
+    );
+    return;
+  }
+  const otherUser = await User.findOne({
+    _id: userId,
+    role: { $ne: 'admin' },
+  });
+
+  if (!otherUser) {
+    next(new AppError('No user found with that ID.', 404));
+    return;
+  }
+
+  const connectedUser = await User.findOne({
+    _id: id,
+  }).select('invitations');
+
+  const { invitations: invitationsVal } = connectedUser;
+
+  const invitations = invitationsVal?.map(user => user.valueOf());
+
+  if (
+    !invitations ||
+    invitations.findIndex(sender => sender === userId) === -1
+  ) {
+    next(
+      new AppError(
+        "The user you want to add hasn't send you a contact request.",
+        400
+      )
+    );
+    return;
+  }
+
+  const newInvitations = invitations?.filter(sender => sender !== userId);
+
+  await User.findByIdAndUpdate(id, {
+    invitations: newInvitations,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Contact invitation successfully refused.',
+    data: null,
   });
 });
 

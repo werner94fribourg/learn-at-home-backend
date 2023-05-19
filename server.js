@@ -61,6 +61,10 @@ io.on('connection', socket => {
     socket.to(CHAT_ROOM).emit('invitation_accepted', invitation);
   });
 
+  socket.on('remove_contact', data => {
+    socket.to(CHAT_ROOM).emit('contact_removed', data);
+  });
+
   socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
   socket.on('disconnect', () => {
     socket
