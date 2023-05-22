@@ -3,6 +3,31 @@ const User = require('../models/userModel');
 const AppError = require('../utils/classes/AppError');
 const { catchAsync } = require('../utils/utils');
 
+exports.getAllDemands = catchAsync(async (req, res, next) => {
+  const {
+    user: { id, role },
+  } = req;
+
+  const reqObject = {
+    [role === 'student' ? 'sender' : 'teacher']: id,
+  };
+
+  const teachingDemands = await TeachingDemand.find(reqObject)
+    .populate({
+      path: 'sender',
+      select: '_id username',
+    })
+    .populate({
+      path: 'receiver',
+      select: '_id username',
+    });
+
+  res.status(200).json({
+    status: 'success',
+    data: { teachingDemands },
+  });
+});
+
 exports.getDemand = catchAsync(async (req, res, next) => {
   const {
     user: { id },
@@ -20,7 +45,15 @@ exports.getDemand = catchAsync(async (req, res, next) => {
         receiver: id,
       },
     ],
-  });
+  })
+    .populate({
+      path: 'sender',
+      select: '_id username',
+    })
+    .populate({
+      path: 'receiver',
+      select: '_id username',
+    });
 
   res.status(200).json({
     status: 'success',
@@ -68,7 +101,15 @@ exports.sendDemand = catchAsync(async (req, res, next) => {
     sent: Date.now(),
     accepted: false,
     cancelled: false,
-  });
+  })
+    .populate({
+      path: 'sender',
+      select: '_id username',
+    })
+    .populate({
+      path: 'receiver',
+      select: '_id username',
+    });
 
   res.status(201).json({
     status: 'success',
@@ -101,11 +142,21 @@ exports.acceptDemand = catchAsync(async (req, res, next) => {
     return;
   }
 
-  const updatedDemand = await TeachingDemand.findByIdAndUpdate(
-    demand._id,
+  const updatedDemand = await TeachingDemand.findOneAndUpdate(
+    {
+      _id: demand._id,
+    },
     { accepted: true },
     { new: true }
-  );
+  )
+    .populate({
+      path: 'sender',
+      select: '_id username',
+    })
+    .populate({
+      path: 'receiver',
+      select: '_id username',
+    });
 
   await TeachingDemand.updateMany(
     {
@@ -168,11 +219,21 @@ exports.cancelDemand = catchAsync(async (req, res, next) => {
     return;
   }
 
-  const updatedDemand = await TeachingDemand.findByIdAndUpdate(
-    demand._id,
+  const updatedDemand = await TeachingDemand.findOneAndUpdate(
+    {
+      _id: demand._id,
+    },
     { cancelled: true },
     { new: true }
-  );
+  )
+    .populate({
+      path: 'sender',
+      select: '_id username',
+    })
+    .populate({
+      path: 'receiver',
+      select: '_id username',
+    });
 
   res
     .status(200)

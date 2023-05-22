@@ -9,6 +9,7 @@ const {
   sendDemand,
   acceptDemand,
   cancelDemand,
+  getAllDemands,
 } = require('../../controllers/teachingDemandController');
 
 const router = express.Router();
@@ -29,13 +30,25 @@ const router = express.Router();
  *           description: The creation date of the teaching demand
  *           example: 2023-04-03T12:24:20.358Z
  *         sender:
- *           type: string
- *           description: The id of the sender of the teaching demand
- *           example: 642199e8fcc9f9121f994dfr
+ *           type: object
+ *           description: The user that has sent the teaching demand
+ *           properties:
+ *             _id:
+ *               type: string
+ *               example: 642199e8fcc9f9121f994dfr
+ *             username:
+ *               type: string
+ *               example: werner94
  *         receiver:
- *           type: string
- *           description: The id of the receiver of the teaching demand
- *           example: 642199c4fcc9f9121f994dfb
+ *           type: object
+ *           description: The user that has received the teaching demand
+ *           properties:
+ *             _id:
+ *               type: string
+ *               example: 642199c4fcc9f9121f994dfb
+ *             username:
+ *               type: string
+ *               example: werner95
  *         accepted:
  *           type: boolean
  *           description: The acceptation status of the teaching demand
@@ -47,6 +60,75 @@ const router = express.Router();
  */
 
 router.use(protect);
+
+/**
+ * @swagger
+ * /teaching-demands:
+ *   get:
+ *     tags:
+ *       - Teaching Demand
+ *     summary: Route used to get all teaching demand sent / received of an user (restricted to student and teacher)
+ *     responses:
+ *       200:
+ *         description: The teaching demands involving the connected user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     teachingDemands:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/TeachingDemand'
+ *       401:
+ *         description: User login problems
+ *         content:
+ *           application/json:
+ *             examples:
+ *               notLoggedInExample:
+ *                 summary: User Not logged in
+ *                 value:
+ *                   status: fail
+ *                   message: You are not logged in! Please log in to get access.
+ *               accountNotFoundExample:
+ *                 summary: Account not found or deleted
+ *                 value:
+ *                   status: fail
+ *                   message: The requested account doesn't exist or was deleted.
+ *               passwordChangedExample:
+ *                 summary: Password changed after the token was issued
+ *                 value:
+ *                   status: fail
+ *                   message: User recently changed password ! Please log in again.
+ *       403:
+ *         description: Forbidden access due to role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: You don't have permission to perform this action.
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ *     security:
+ *       - bearerAuth: []
+ */
+router.route('/').get(restrictTo('student', 'teacher'), getAllDemands);
 
 /**
  * @swagger
