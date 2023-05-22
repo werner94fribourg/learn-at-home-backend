@@ -10,6 +10,7 @@ const {
   acceptDemand,
   cancelDemand,
   getAllDemands,
+  getAvailableTeachers,
 } = require('../../controllers/teachingDemandController');
 
 const router = express.Router();
@@ -129,6 +130,106 @@ router.use(protect);
  *       - bearerAuth: []
  */
 router.route('/').get(restrictTo('student', 'teacher'), getAllDemands);
+
+/**
+ * @swagger
+ * /teaching-demands/available-teachers:
+ *   get:
+ *     tags:
+ *       - Teaching Demand
+ *     summary: Route used to get all available teachers to which the user hasn't already sent a teaching demand (restricted to student)
+ *     responses:
+ *       200:
+ *         description: The available teachers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     teachers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                             description: The id of the user
+ *                             example: 642c38f3b7ed1dbd25858e9e
+ *                           email:
+ *                             type: string
+ *                             description: The email of the user
+ *                             example: user@example.com
+ *                           username:
+ *                             type: string
+ *                             description: The username of the user
+ *                             example: johndoe27
+ *                           firstname:
+ *                             type: string
+ *                             description: The first name of the user
+ *                             example: John
+ *                           lastname:
+ *                             type: string
+ *                             description: The last name of the user
+ *                             example: Doe
+ *                           photo:
+ *                             type: string
+ *                             description: The profile picture of the user
+ *                             example: https://learnathome.blob.core.windows.net/public/default.jpg
+ *                           role:
+ *                             type: string
+ *                             description: The role of the user
+ *                             example: teacher
+ *       401:
+ *         description: User login problems
+ *         content:
+ *           application/json:
+ *             examples:
+ *               notLoggedInExample:
+ *                 summary: User Not logged in
+ *                 value:
+ *                   status: fail
+ *                   message: You are not logged in! Please log in to get access.
+ *               accountNotFoundExample:
+ *                 summary: Account not found or deleted
+ *                 value:
+ *                   status: fail
+ *                   message: The requested account doesn't exist or was deleted.
+ *               passwordChangedExample:
+ *                 summary: Password changed after the token was issued
+ *                 value:
+ *                   status: fail
+ *                   message: User recently changed password ! Please log in again.
+ *       403:
+ *         description: Forbidden access due to role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: You don't have permission to perform this action.
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ *     security:
+ *       - bearerAuth: []
+ */
+router
+  .route('/available-teachers')
+  .get(restrictTo('student'), getAvailableTeachers);
 
 /**
  * @swagger

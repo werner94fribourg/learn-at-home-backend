@@ -9,7 +9,7 @@ exports.getAllDemands = catchAsync(async (req, res, next) => {
   } = req;
 
   const reqObject = {
-    [role === 'student' ? 'sender' : 'teacher']: id,
+    [role === 'student' ? 'sender' : 'receiver']: id,
   };
 
   const teachingDemands = await TeachingDemand.find(reqObject)
@@ -26,6 +26,23 @@ exports.getAllDemands = catchAsync(async (req, res, next) => {
     status: 'success',
     data: { teachingDemands },
   });
+});
+
+exports.getAvailableTeachers = catchAsync(async (req, res, next) => {
+  const {
+    user: { id, role },
+  } = req;
+
+  const teachingDemands = (await TeachingDemand.find({ sender: id })).map(
+    demand => demand.receiver
+  );
+
+  const teachers = await User.find({
+    _id: { $nin: teachingDemands },
+    role: 'teacher',
+  });
+
+  res.status(200).json({ status: 'success', data: { teachers } });
 });
 
 exports.getDemand = catchAsync(async (req, res, next) => {
@@ -101,7 +118,9 @@ exports.sendDemand = catchAsync(async (req, res, next) => {
     sent: Date.now(),
     accepted: false,
     cancelled: false,
-  })
+  });
+
+  const teachingDemand = await TeachingDemand.findById(newDemand.id)
     .populate({
       path: 'sender',
       select: '_id username',
@@ -113,7 +132,7 @@ exports.sendDemand = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     status: 'success',
-    data: { teachingDemand: newDemand },
+    data: { teachingDemand },
   });
 });
 
