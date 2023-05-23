@@ -3,7 +3,7 @@ const User = require('../models/userModel');
 const AppError = require('../utils/classes/AppError');
 const { catchAsync } = require('../utils/utils');
 
-exports.getAllDemands = catchAsync(async (req, res, next) => {
+exports.getAllDemands = catchAsync(async (req, res) => {
   const {
     user: { id, role },
   } = req;
@@ -28,9 +28,25 @@ exports.getAllDemands = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAvailableTeachers = catchAsync(async (req, res, next) => {
+exports.isSupervised = catchAsync(async (req, res, next) => {
   const {
-    user: { id, role },
+    user: { id },
+  } = req;
+
+  const teachingDemand = await TeachingDemand.findOne({
+    sender: id,
+    accepted: true,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    supervised: teachingDemand ? true : false,
+  });
+});
+
+exports.getAvailableTeachers = catchAsync(async (req, res) => {
+  const {
+    user: { id },
   } = req;
 
   const teachingDemands = (await TeachingDemand.find({ sender: id })).map(
@@ -45,7 +61,7 @@ exports.getAvailableTeachers = catchAsync(async (req, res, next) => {
   res.status(200).json({ status: 'success', data: { teachers } });
 });
 
-exports.getDemand = catchAsync(async (req, res, next) => {
+exports.getDemand = catchAsync(async (req, res) => {
   const {
     user: { id },
     params: { userId: otherId },
