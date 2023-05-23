@@ -179,10 +179,7 @@ exports.acceptDemand = catchAsync(async (req, res, next) => {
 
   await TeachingDemand.updateMany(
     {
-      $and: [
-        { sender: updatedDemand.sender },
-        { receiver: { $ne: updatedDemand.receiver } },
-      ],
+      $and: [{ sender: updatedDemand.sender }, { _id: { $ne: demand._id } }],
     },
     { cancelled: true }
   );
