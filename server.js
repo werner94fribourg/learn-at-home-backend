@@ -65,6 +65,18 @@ io.on('connection', socket => {
     socket.to(CHAT_ROOM).emit('contact_removed', data);
   });
 
+  socket.on('send_teaching_demand', demand => {
+    socket.to(CHAT_ROOM).emit('receive_teaching_demand', demand);
+  });
+
+  socket.on('accept_teaching_demand', demand => {
+    socket.to(CHAT_ROOM).emit('teaching_demand_accepted', demand);
+  });
+
+  socket.on('cancel_teaching_demand', demand => {
+    socket.to(CHAT_ROOM).emit('teaching_demand_cancelled', demand);
+  });
+
   socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
   socket.on('disconnect', () => {
     socket
