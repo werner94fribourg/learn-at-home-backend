@@ -40,7 +40,6 @@ exports.getAllEvents = catchAsync(async (req, res, next) => {
   const events = await Event.find({
     $or: [{ organizer: userId }, { guests: userId }, { attendees: userId }],
   })
-    .select('-guests -attendees')
     .populate({
       path: 'organizer',
       select: 'username',
