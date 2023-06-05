@@ -77,6 +77,10 @@ io.on('connection', socket => {
     socket.to(CHAT_ROOM).emit('teaching_demand_cancelled', demand);
   });
 
+  socket.on('event_created', event => {
+    socket.to(CHAT_ROOM).emit('receive_event', event);
+  });
+
   socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
   socket.on('disconnect', () => {
     socket
