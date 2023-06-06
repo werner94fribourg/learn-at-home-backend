@@ -81,6 +81,14 @@ io.on('connection', socket => {
     socket.to(CHAT_ROOM).emit('receive_event', event);
   });
 
+  socket.on('accept_event', event => {
+    socket.to(CHAT_ROOM).emit('event_accepted', event);
+  });
+
+  socket.on('decline_event', event => {
+    socket.to(CHAT_ROOM).emit('event_declined', event);
+  });
+
   socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
   socket.on('disconnect', () => {
     socket
