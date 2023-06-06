@@ -89,7 +89,12 @@ io.on('connection', socket => {
     socket.to(CHAT_ROOM).emit('event_declined', event);
   });
 
+  socket.on('modify_event', event => {
+    socket.to(CHAT_ROOM).emit('event_modified', event);
+  });
+
   socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
+
   socket.on('disconnect', () => {
     socket
       .to(CHAT_ROOM)
