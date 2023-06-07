@@ -93,6 +93,10 @@ io.on('connection', socket => {
     socket.to(CHAT_ROOM).emit('event_modified', event);
   });
 
+  socket.on('delete_event', event => {
+    socket.to(CHAT_ROOM).emit('event_deleted', event);
+  });
+
   socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
 
   socket.on('disconnect', () => {
