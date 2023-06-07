@@ -12,6 +12,7 @@ const {
   getEvents,
   getNext,
   getPrevious,
+  isBefore,
 } = require('../utils/utils');
 const moment = require('moment-timezone');
 const User = require('../models/userModel');
@@ -145,7 +146,7 @@ exports.updateEvent = catchAsync(async (req, res, next) => {
       description,
       beginningTime: begBeforeTrans,
       endTime: endBeforeTrans,
-      guest: guestArray,
+      guests: guestArray,
       attendees: attendeesArray,
     },
     params: { eventId: id },
@@ -155,6 +156,8 @@ exports.updateEvent = catchAsync(async (req, res, next) => {
   } = req;
   let beginningTime = transformTime(begBeforeTrans);
   let endTime = transformTime(endBeforeTrans);
+
+  console.log(req.body);
   const guests =
     guestArray?.filter((element, index) => {
       return (
@@ -230,13 +233,20 @@ exports.updateEvent = catchAsync(async (req, res, next) => {
     attendees,
   };
 
+  if (!isBefore(updateObj.beginning, updateObj.end)) {
+    next(
+      new AppError("The end date can't happen before the beginning date.", 400)
+    );
+    return;
+  }
+
   if (title) updateObj.title = title;
 
   if (description) updateObj.description = description;
 
   const updatedEvent = await Event.findByIdAndUpdate(id, updateObj, {
     new: true,
-    runValidators: true,
+    runValidators: false,
   });
 
   res.status(200).json({ status: 'success', data: { event: updatedEvent } });

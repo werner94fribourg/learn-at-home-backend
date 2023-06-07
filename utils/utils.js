@@ -304,6 +304,9 @@ exports.formatDate = date => {
   return `${yearStr}-${month}-${dayStr} 00:00:00`;
 };
 
+exports.isBefore = (date1, date2) =>
+  moment.tz(date1, TIMEZONE).valueOf() < moment.tz(date2, TIMEZONE).valueOf();
+
 exports.getEvents = async (type, req, res, next) => {
   const {
     user: { id: userId },
