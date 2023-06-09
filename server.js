@@ -97,6 +97,14 @@ io.on('connection', socket => {
     socket.to(CHAT_ROOM).emit('event_deleted', event);
   });
 
+  socket.on('complete_task', task => {
+    socket.to(CHAT_ROOM).emit('task_completed', task);
+  });
+
+  socket.on('validate_task', task => {
+    socket.to(CHAT_ROOM).emit('task_validated', task);
+  });
+
   socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
 
   socket.on('disconnect', () => {
