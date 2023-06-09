@@ -43,13 +43,14 @@ exports.getAll = (Model, filterOptions) =>
     }
   });
 
-exports.queryOne = (Model, filterOptions, popOptions) =>
+exports.queryOne = (Model, filterOptions, popOptions, selectOptions) =>
   catchAsync(async (req, res, next) => {
     const {
       params: { id },
     } = req;
 
     let query = Model.findOne({ _id: id, ...filterOptions });
+    if (selectOptions) query = query.select(selectOptions);
     if (popOptions) query = query.populate(popOptions);
 
     const document = await query;

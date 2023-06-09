@@ -38,8 +38,18 @@ exports.deleteUser = deleteOne(User);
 exports.queryMe = (req, res, next) => {
   req.params.id = req.user.id;
 
+  let popOptions = undefined;
+  let selectOptions = undefined;
+  if (req.user.role === 'student') {
+    popOptions = {
+      path: 'supervisor',
+      select: '_id username',
+    };
+    selectOptions = '+supervisor';
+  }
+
   // User without filtering
-  queryOne(User)(req, res, next);
+  queryOne(User, {}, popOptions, selectOptions)(req, res, next);
 };
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
