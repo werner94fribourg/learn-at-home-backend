@@ -8,7 +8,10 @@ exports.getAllTasks = catchAsync(async (req, res, next) => {
     user: { id: performer },
   } = req;
 
-  const tasks = await Task.find({ performer });
+  const tasks = await Task.find({ performer }).populate({
+    path: 'performer',
+    select: '_id username',
+  });
 
   res.status(200).json({
     status: 'success',
@@ -24,7 +27,12 @@ exports.createTask = catchAsync(async (req, res, next) => {
 
   const newTask = await Task.create({ title, performer });
 
-  res.status(201).json({ status: 'success', data: { task: newTask } });
+  const task = await Task.findById(newTask._id).populate({
+    path: 'performer',
+    select: '_id username',
+  });
+
+  res.status(201).json({ status: 'success', data: { task } });
 });
 
 exports.completeTask = catchAsync(async (req, res, next) => {
@@ -49,7 +57,10 @@ exports.completeTask = catchAsync(async (req, res, next) => {
     id,
     { done: true },
     { new: true }
-  );
+  ).populate({
+    path: 'performer',
+    select: '_id username',
+  });
 
   res.status(200).json({ status: 'success', data: { task: updatedTask } });
 });
@@ -90,7 +101,10 @@ exports.validateTask = catchAsync(async (req, res, next) => {
     id,
     { validated: true, validator: teacher },
     { new: true }
-  );
+  ).populate({
+    path: 'performer',
+    select: '_id username',
+  });
 
   res.status(200).json({ status: 'success', data: { task: updatedTask } });
 });
@@ -116,7 +130,12 @@ exports.createTaskStudent = catchAsync(async (req, res, next) => {
 
   const newTask = await Task.create({ title, performer: student });
 
-  res.status(201).json({ status: 'success', data: { task: newTask } });
+  const task = await Task.findById(newTask._id).populate({
+    path: 'performer',
+    select: '_id username',
+  });
+
+  res.status(201).json({ status: 'success', data: { task } });
 });
 
 exports.getValidatedStudentTasks = catchAsync(async (req, res, next) => {
@@ -126,7 +145,7 @@ exports.getValidatedStudentTasks = catchAsync(async (req, res, next) => {
 
   const tasks = await Task.find({ validator: teacher }).populate({
     path: 'performer',
-    select: 'username',
+    select: '_id username',
   });
 
   res.status(200).json({ status: 'success', data: { tasks } });
@@ -145,7 +164,7 @@ exports.getDoneStudentTasks = catchAsync(async (req, res, next) => {
     performer: { $in: supervisedIds },
   }).populate({
     path: 'performer',
-    select: 'username',
+    select: '_id username',
   });
 
   res.status(200).json({ status: 'success', data: { tasks } });
@@ -164,7 +183,7 @@ exports.getTodoStudentTasks = catchAsync(async (req, res, next) => {
     performer: { $in: supervisedIds },
   }).populate({
     path: 'performer',
-    select: 'username',
+    select: '_id username',
   });
 
   res.status(200).json({ status: 'success', data: { tasks } });

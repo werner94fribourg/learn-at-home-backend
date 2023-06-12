@@ -29,9 +29,17 @@ const router = express.Router();
  *           description: The title of the task
  *           example: Review Maths
  *         performer:
- *           type: string
- *           description: The user (student) executing the task
- *           example: 642199e8fcc9f9121f994dfr
+ *           type: object
+ *           description: The performer (student) of the task
+ *           properties:
+ *             _id:
+ *               type: string
+ *               description: The id of the user executing the task
+ *               example: 642199e8fcc9f9121f994dfr
+ *             username:
+ *               type: string
+ *               description: The username of the user executing the task
+ *               example: werner95
  *         done:
  *           type: boolean
  *           description: The completion status of the task
