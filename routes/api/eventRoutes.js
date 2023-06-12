@@ -19,6 +19,7 @@ const {
   getEventsYear,
   getPreviousYear,
   getNextYear,
+  getTodayEvents,
 } = require('../../controllers/eventController');
 
 const router = express.Router();
@@ -362,6 +363,74 @@ router.use(protect, restrictTo('student', 'teacher'));
  */
 router.route('/').get(getAllEvents).post(createEvent);
 
+/**
+ * @swagger
+ * /events/today:
+ *   get:
+ *     tags:
+ *       - Event
+ *     summary: Route used to get today's events of a specific user (accessible to students and teachers only)
+ *     responses:
+ *       200:
+ *         description: The today events of the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     events:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Event'
+ *       401:
+ *         description: User login problems
+ *         content:
+ *           application/json:
+ *             examples:
+ *               notLoggedInExample:
+ *                 summary: User Not logged in
+ *                 value:
+ *                   status: fail
+ *                   message: You are not logged in! Please log in to get access.
+ *               accountNotFoundExample:
+ *                 summary: Account not found or deleted
+ *                 value:
+ *                   status: fail
+ *                   message: The requested account doesn't exist or was deleted.
+ *               passwordChangedExample:
+ *                 summary: Password changed after the token was issued
+ *                 value:
+ *                   status: fail
+ *                   message: User recently changed password ! Please log in again.
+ *       403:
+ *         description: Forbidden access due to role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: You don't have permission to perform this action.
+ *       500:
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ServerError'
+ *     security:
+ *       - bearerAuth: []
+ */
+router.route('/today').get(getTodayEvents);
 /**
  * @swagger
  * /events/week/today:

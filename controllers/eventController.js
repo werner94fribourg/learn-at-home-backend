@@ -57,6 +57,34 @@ exports.getAllEvents = catchAsync(async (req, res, next) => {
   res.status(200).json({ status: 'success', data: { events } });
 });
 
+exports.getTodayEvents = catchAsync(async (req, res) => {
+  const {
+    user: { id: userId },
+  } = req;
+
+  const today = moment(Date.now()).tz(TIMEZONE);
+  const start = today.clone().startOf('day');
+  const end = today.clone().endOf('day');
+
+  const events = await Event.find({
+    $and: [
+      {
+        $and: [{ beginning: { $gte: start } }, { beginning: { $lte: end } }],
+      },
+      {
+        $or: [{ organizer: userId }, { guests: userId }, { attendees: userId }],
+      },
+    ],
+  })
+    .populate({
+      path: 'organizer',
+      select: 'username',
+    })
+    .sort({ beginning: -1 });
+
+  res.status(200).json({ status: 'success', data: { events } });
+});
+
 exports.getEvent = catchAsync(async (req, res, next) => {
   const {
     user: { id: userId },
@@ -157,7 +185,6 @@ exports.updateEvent = catchAsync(async (req, res, next) => {
   let beginningTime = transformTime(begBeforeTrans);
   let endTime = transformTime(endBeforeTrans);
 
-  console.log(req.body);
   const guests =
     guestArray?.filter((element, index) => {
       return (
