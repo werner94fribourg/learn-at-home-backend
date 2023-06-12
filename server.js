@@ -105,6 +105,10 @@ io.on('connection', socket => {
     socket.to(CHAT_ROOM).emit('task_validated', task);
   });
 
+  socket.on('create_task', task => {
+    socket.to(CHAT_ROOM).emit('task_created', task);
+  });
+
   socket.to(CHAT_ROOM).emit('notify_connection', { userId, connected: true });
 
   socket.on('disconnect', () => {
