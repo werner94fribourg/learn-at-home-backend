@@ -4,7 +4,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const AppError = require('../utils/classes/AppError');
 const Email = require('../utils/classes/Email');
-const { API_ROUTE, TIMEOUTS, PASSWORD_VALIDATOR } = require('../utils/globals');
+const {
+  API_ROUTE,
+  TIMEOUTS,
+  PASSWORD_VALIDATOR,
+  FRONT_END_URL,
+} = require('../utils/globals');
 const { catchAsync, createSendToken } = require('../utils/utils');
 const Message = require('../models/messageModel');
 const Event = require('../models/eventModel');
@@ -46,9 +51,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   await newUser.save({ validateBeforeSave: false });
 
   try {
-    const url = `${req.protocol}://${req.get(
-      'host'
-    )}${API_ROUTE}/users/confirm/${confirmToken}`;
+    const url = `${FRONT_END_URL}/confirm/${confirmToken}`;
 
     await new Email(newUser, url).sendWelcome();
 
@@ -148,7 +151,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     await newUser.save({ validateBeforeSave: false });
     next(
       new AppError(
-        'There was an error sending the confirmation email. Please contact us at admin-learn@home.com!',
+        'There was an error sending the confirmation email. Please contact us at admin@learn-at-home.com!',
         500
       )
     );
