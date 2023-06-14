@@ -11,6 +11,7 @@ const {
   restrictTo,
   restrictUpdatePassword,
   restrictUpdateRole,
+  isResetLinkValid,
 } = require('../../controllers/authController');
 const {
   getAllUsers,
@@ -1605,6 +1606,49 @@ router.post('/forgot-password', forgotPassword);
 /**
  * @swagger
  * /users/reset-password/{resetToken}:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *     summary: Route used to get the validity of a reset password token link
+ *     parameters:
+ *       - name: resetToken
+ *         in: path
+ *         description: 'The reset token used to reset the password of an user (accessible via a link sent to the user by e-mail)'
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: The validity of the reset token link
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     valid:
+ *                       type: boolean
+ *                       example: false
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             examples:
+ *               emailSendingExample:
+ *                 summary: E-mail sending error
+ *                 value:
+ *                   status: error
+ *                   message: There was an error sending the confirmation email. Please contact us at admin-learn@home.com!
+ *               internalServerErrorExample:
+ *                 summary: Generic internal server error
+ *                 value:
+ *                   status: error
+ *                   message: Something went wrong. Try Again !
  *   post:
  *     tags:
  *       - Authentication
@@ -1671,7 +1715,10 @@ router.post('/forgot-password', forgotPassword);
  *             schema:
  *               $ref: '#/components/schemas/ServerError'
  */
-router.post('/reset-password/:resetToken', resetPassword);
+router
+  .route('/reset-password/:resetToken')
+  .get(isResetLinkValid)
+  .post(resetPassword);
 
 router.use(protect);
 

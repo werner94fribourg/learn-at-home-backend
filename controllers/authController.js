@@ -279,7 +279,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   await user.save({ validateBeforeSave: false });
   try {
-    const url = `${FRONT_END_URL}/users/reset-password/${resetToken}`;
+    const url = `${FRONT_END_URL}/reset-password/${resetToken}`;
 
     await new Email(user, url).sendPasswordReset();
 
@@ -294,6 +294,29 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
       new AppError('There was an error sending the email. Try Again !', 500)
     );
   }
+});
+
+exports.isResetLinkValid = catchAsync(async (req, res, next) => {
+  const {
+    params: { resetToken },
+  } = req;
+
+  const passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      valid: !user ? false : true,
+    },
+  });
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
