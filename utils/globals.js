@@ -22,7 +22,7 @@ exports.PASSWORD_VALIDATOR = PASSWORD_VALIDATOR;
 
 exports.PARAMETER_WHITELIST = ['sent', 'beginning', 'end'];
 
-exports.FRONT_END_URL = 'http://localhost:3000';
+exports.FRONT_END_URL = 'https://learn-at-home-frontend.vercel.app';
 
 exports.API_ROUTE = '/api/v1';
 
