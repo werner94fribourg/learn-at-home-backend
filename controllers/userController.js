@@ -69,7 +69,7 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
     });
     TIMEOUTS[id] = undefined;
     await new Email(updatedUser, '').sendPermanentDelete();
-  }, 30 * 1000 /*90 * 24 * 60 * 60 * 1000*/);
+  }, 90 * 24 * 60 * 60 * 1000);
 
   TIMEOUTS[id] = deleteTimeout;
   res.status(204).json({

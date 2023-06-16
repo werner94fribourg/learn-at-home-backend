@@ -19,6 +19,9 @@ const {
 const AppError = require('./utils/classes/AppError');
 const errorHandler = require('./controllers/errorController');
 const swaggerSpec = require('./utils/swagger');
+const User = require('./models/userModel');
+const Message = require('./models/messageModel');
+const Task = require('./models/taskModel');
 
 const app = express();
 const {
@@ -109,5 +112,20 @@ app.all('*', (req, _, next) => {
 });
 
 app.use(errorHandler);
+
+setInterval(async () => {
+  const testUsers = await User.find({
+    $or: [{ username: 'student' }, { username: 'teacher' }],
+  });
+
+  await Promise.all(
+    testUsers.map(async user => {
+      const id = user._id.valueOf();
+      await Event.deleteMany({ organizer: id });
+      await Message.deleteMany({ $or: [{ sender: id }, { receiver: id }] });
+      await Task.deleteMany({ performer: id });
+    })
+  );
+}, 24 * 60 * 60 * 1000);
 
 module.exports = app;
