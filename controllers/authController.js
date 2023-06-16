@@ -473,6 +473,19 @@ exports.restrictUpdateRole = (req, res, next) => {
   next();
 };
 
+exports.restrictUpdateTestsAccount = catchAsync(async (req, res, next) => {
+  let { document: user } = req;
+
+  if (!user) user = req.user;
+
+  if (user.username === 'student' || user.username === 'teacher') {
+    next(new AppError("You can't update the test accounts.", 403));
+    return;
+  }
+
+  next();
+});
+
 exports.checkOtherUser = catchAsync(async (req, res, next) => {
   const {
     params: { userId },

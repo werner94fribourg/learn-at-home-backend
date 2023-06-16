@@ -12,6 +12,7 @@ const {
   restrictUpdatePassword,
   restrictUpdateRole,
   isResetLinkValid,
+  restrictUpdateTestsAccount,
 } = require('../../controllers/authController');
 const {
   getAllUsers,
@@ -414,6 +415,19 @@ router.route('/').get(protect, getAllUsers).post(createUser);
  *                 value:
  *                   status: fail
  *                   message: User recently changed password ! Please log in again.
+ *       403:
+ *         description: Forbidden access due to test accounts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: You can't update the test accounts.
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -433,9 +447,10 @@ router
     uploadUserPhoto,
     resizeUserPhoto,
     queryMe,
+    restrictUpdateTestsAccount,
     updateUser
   )
-  .delete(protect, queryMe, deleteMe);
+  .delete(protect, queryMe, restrictUpdateTestsAccount, deleteMe);
 
 /**
  * @swagger
@@ -1807,6 +1822,19 @@ router.use(protect);
  *                 value:
  *                   status: fail
  *                   message: Your current password is wrong.
+ *       403:
+ *         description: Forbidden access due to test accounts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: fail
+ *                 message:
+ *                   type: string
+ *                   example: You can't update the test accounts.
  *       500:
  *         description: Internal Server Error
  *         content:
@@ -1816,7 +1844,7 @@ router.use(protect);
  *     security:
  *       - bearerAuth: []
  */
-router.patch('/update-password', updatePassword);
+router.patch('/update-password', restrictUpdateTestsAccount, updatePassword);
 
 router.use(restrictTo('admin'));
 
